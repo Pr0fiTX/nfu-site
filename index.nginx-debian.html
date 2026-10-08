@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <title>nfu.su | notforu</title>
+    <link rel="icon" href="favicon.png" type="image/png">
+
+    <!-- Безопасный CDN для моноширинного шрифта JetBrains Mono -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@jetbrains/mono@1.0.6/css/jetbrains-mono.min.css">
+
+    <style>
+        :root {
+            /* Базовая палитра */
+            --bg-color: #222222;
+            --text-main: #76804c;
+            --accent: #76804c;
+
+            /* Градации оттенков */
+            --bg-darker: #181818;
+            --bg-surface: rgba(28, 28, 28, 0.75);
+            --bg-surface-hover: rgba(38, 38, 38, 0.85);
+            --border-dim: rgba(118, 128, 76, 0.2);
+            --border-bright: rgba(118, 128, 76, 0.6);
+            --text-bright: #9cb066;
+            --text-muted: rgba(118, 128, 76, 0.65);
+            --glow: rgba(118, 128, 76, 0.35);
+            --font-mono: 'JetBrains Mono', 'NerdFont Mono', 'FiraCode Nerd Font', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            line-height: 1.6;
+        }
+
+        body {
+            position: relative;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            background: radial-gradient(circle at 50% 20%, #292929 0%, var(--bg-color) 75%);
+        }
+
+        /* Кастомный скроллбар страницы */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-darker);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-dim);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        /* CRT Сканлайн-эффект */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+            background: linear-gradient(rgba(18, 18, 18, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            opacity: 0.6;
+        }
+
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
+        /* Контейнер страницы */
+        .page-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px 100px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 60px;
+        }
+
+        /* --- 1. TOP NAV / HUD --- */
+        .hud-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px dashed var(--border-dim);
+            font-size: 0.85rem;
+        }
+        .hud-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent);
+            animation: pulse-dot 2s infinite ease-in-out;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+        .hud-nav {
+            display: flex;
+            gap: 20px;
+        }
+        .hud-nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .hud-nav a:hover {
+            color: var(--text-bright);
+            text-shadow: 0 0 6px var(--glow);
+        }
+
+        /* --- 2. HERO SECTION --- */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 20px;
+            padding: 40px 0 20px 0;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 10px;
+            background: rgba(118, 128, 76, 0.08);
+            border: 1px solid var(--border-dim);
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: var(--text-bright);
+        }
+        .hero-title {
+            font-size: clamp(2rem, 5vw, 3.6rem);
+            font-weight: 700;
+            line-height: 1.1;
+            color: var(--text-bright);
+            text-shadow: 0 0 15px var(--glow);
+            letter-spacing: -0.02em;
+        }
+        .hero-title span {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+        .hero-subtitle {
+            font-size: clamp(0.95rem, 2.2vw, 1.2rem);
+            color: var(--text-main);
+            max-width: 720px;
+            border-left: 2px solid var(--border-bright);
+            padding-left: 14px;
+        }
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 10px;
+        }
+
+        /* Кнопки */
+        .btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: var(--text-bright);
+            background: rgba(118, 128, 76, 0.08);
+            border: 1px solid var(--border-dim);
+            padding: 12px 24px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            text-decoration: none;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+            backdrop-filter: blur(8px);
+        }
+        .btn:hover {
+            background: rgba(118, 128, 76, 0.16);
+            border-color: var(--border-bright);
+            box-shadow: 0 0 16px var(--glow);
+            transform: translateY(-2px);
+        }
+        .btn-primary {
+            background: var(--text-main);
+            color: var(--bg-darker);
+            font-weight: 700;
+            border-color: var(--accent);
+        }
+        .btn-primary:hover {
+            background: var(--text-bright);
+            box-shadow: 0 0 20px var(--glow);
+            color: #111;
+        }
+
+        /* --- 3. BENTO GRID ARCHITECTURE --- */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .section-header h2 {
+            font-size: 1.4rem;
+            color: var(--text-bright);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-header .line {
+            flex: 1;
+            height: 1px;
+            background: var(--border-dim);
+        }
+
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-dim);
+            border-radius: 8px;
+            padding: 24px;
+            position: relative;
+            backdrop-filter: blur(12px);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            border-color: var(--border-bright);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Терминал (span 8) */
+        .card-terminal {
+            grid-column: span 8;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            overflow: hidden;
+        }
+        .term-header {
+            background: rgba(20, 20, 20, 0.8);
+            border-bottom: 1px solid var(--border-dim);
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .term-dots {
+            display: flex;
+            gap: 6px;
+        }
+        .term-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 1px solid var(--border-dim);
+        }
+        .term-dot:nth-child(1) { background: rgba(118, 128, 76, 0.6); }
+        .term-dot:nth-child(2) { background: rgba(118, 128, 76, 0.3); }
+        .term-dot:nth-child(3) { background: rgba(118, 128, 76, 0.15); }
+
+        .term-tabs {
+            display: flex;
+            gap: 8px;
+        }
+        .term-tab {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .term-tab.active, .term-tab:hover {
+            color: var(--text-bright);
+            background: rgba(118, 128, 76, 0.15);
+        }
+
+        .term-body {
+            padding: 20px;
+            font-size: 0.9rem;
+            min-height: 260px;
+            overflow-x: auto;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        .term-row {
+            display: flex;
+            margin-bottom: 8px;
+            word-break: break-all;
+        }
+        .term-key {
+            color: var(--text-bright);
+            width: 130px;
+            flex-shrink: 0;
+        }
+        .term-val {
+            color: var(--text-main);
+        }
+
+        /* --- Стили для журнала CTF событий (events.log) --- */
+        .ctf-events-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 215px;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+        .ctf-events-container::-webkit-scrollbar {
+            width: 4px;
+        }
+        .ctf-events-container::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .ctf-events-container::-webkit-scrollbar-thumb {
+            background: var(--border-dim);
+            border-radius: 2px;
+        }
+        .ctf-events-container::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+        .ctf-event-entry {
+            background: rgba(15, 15, 15, 0.45);
+            border: 1px solid var(--border-dim);
+            border-radius: 4px;
+            padding: 8px 12px;
+            transition: border-color 0.2s ease, background 0.2s ease;
+        }
+        .ctf-event-entry:hover {
+            border-color: var(--border-bright);
+            background: rgba(118, 128, 76, 0.05);
+        }
+        .ctf-event-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 4px;
+        }
+        .ctf-event-title-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .ctf-badge-status {
+            font-size: 0.7rem;
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+        .status-done {
+            background: rgba(118, 128, 76, 0.2);
+            border: 1px solid var(--accent);
+            color: var(--text-bright);
+        }
+        .status-plan {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px dashed var(--border-dim);
+            color: var(--text-muted);
+        }
+        .ctf-event-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-bright);
+        }
+        .ctf-event-date {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .ctf-event-info {
+            font-size: 0.8rem;
+            color: var(--text-main);
+            word-break: break-word;
+        }
+
+        /* Environment Specs (span 4) */
+        .card-specs {
+            grid-column: span 4;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .spec-item {
+            display: flex;
+            flex-direction: column;
+            padding: 8px 0;
+            border-bottom: 1px dashed var(--border-dim);
+        }
+        .spec-item:last-child {
+            border-bottom: none;
+        }
+        .spec-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        .spec-value {
+            font-size: 0.95rem;
+            color: var(--text-bright);
+        }
+
+        /* Tech Stack (span 7) */
+        .card-stack {
+            grid-column: span 7;
+        }
+        .tags-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
+        }
+        .tag {
+            background: rgba(118, 128, 76, 0.08);
+            border: 1px solid var(--border-dim);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--text-bright);
+            transition: all 0.2s;
+        }
+        .tag:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--glow);
+            transform: translateY(-1px);
+        }
+
+        /* --- КАРТОЧКА: ПЯТИУГОЛЬНЫЙ CTF РАДАР (span 5) --- */
+        .card-radar {
+            grid-column: span 5;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+        }
+        .radar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .radar-badge {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            background: rgba(118, 128, 76, 0.15);
+            border: 1px solid var(--border-dim);
+            border-radius: 3px;
+            color: var(--text-bright);
+            letter-spacing: 0.05em;
+        }
+        .radar-svg-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 6px 0;
+        }
+        .radar-svg {
+            width: 100%;
+            max-width: 270px;
+            height: auto;
+            overflow: visible;
+        }
+        .radar-grid-line {
+            fill: none;
+            stroke: var(--border-dim);
+            stroke-width: 1;
+            stroke-dasharray: 2 2;
+        }
+        .radar-axis {
+            stroke: var(--border-dim);
+            stroke-width: 1;
+        }
+        .radar-polygon {
+            fill: rgba(118, 128, 76, 0.25);
+            stroke: var(--accent);
+            stroke-width: 2;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 0 6px var(--glow));
+        }
+        .radar-polygon:hover {
+            fill: rgba(118, 128, 76, 0.4);
+            stroke: var(--text-bright);
+        }
+        .radar-point {
+            fill: var(--text-bright);
+            stroke: var(--bg-darker);
+            stroke-width: 1.5;
+            transition: r 0.2s ease;
+        }
+        .radar-point:hover {
+            r: 5;
+            fill: #fff;
+        }
+        .radar-label {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            fill: var(--text-bright);
+            letter-spacing: 0.05em;
+        }
+        .radar-footer {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border-dim);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+        }
+        .radar-footer-role {
+            color: var(--text-bright);
+            font-weight: 600;
+        }
+
+        /* --- 4. CONNECTIONS & SOCIALS --- */
+        .social-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+        .social-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-dim);
+            padding: 16px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: var(--text-bright);
+            transition: all 0.25s ease;
+        }
+        .social-card:hover {
+            border-color: var(--border-bright);
+            box-shadow: 0 0 14px var(--glow);
+            transform: translateY(-2px);
+            background: var(--bg-surface-hover);
+        }
+        .social-card .arrow {
+            transition: transform 0.2s ease;
+        }
+        .social-card:hover .arrow {
+            transform: translateX(4px);
+        }
+
+        /* --- 5. VIM STATUSLINE FOOTER --- */
+        .statusline {
+            margin-top: auto;
+            background: var(--bg-darker);
+            border-top: 1px solid var(--border-dim);
+            padding: 8px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            z-index: 10;
+        }
+        .statusline-mode {
+            background: var(--accent);
+            color: var(--bg-darker);
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 2px;
+            margin-right: 12px;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .card-terminal, .card-specs, .card-stack, .card-radar {
+                grid-column: span 12;
+            }
+            .hud-header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+            .statusline {
+                flex-direction: column;
+                gap: 6px;
+                align-items: flex-start;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+            #particles {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scanlines"></div>
+    <canvas id="particles"></canvas>
+
+    <div class="page-container">
+
+        <!-- ВЕРХНИЙ СТАТУС-БАР -->
+        <header class="hud-header">
+            <div class="hud-left">
+                <div class="status-dot"></div>
+                <span>NODE: nfu.su</span>
+                <span style="color: var(--border-dim);">|</span>
+                <span style="color: var(--text-muted);">HOST: Aeza (Sweden)</span>
+            </div>
+            <nav class="hud-nav">
+                <a href="#about">// about</a>
+                <a href="#specs">// setup</a>
+                <a href="#radar-section">// ctf_matrix</a>
+                <a href="#links">// connect</a>
+                <a href="https://git.nfu.su" target="_blank" rel="noopener noreferrer">// stagit</a>
+            </nav>
+        </header>
+
+        <!-- ПЕРВЫЙ ЭКРАН (HERO) -->
+        <section class="hero" id="about">
+            <div class="hero-badge">
+                <span>&gt; sys_status: all systems operational</span>
+            </div>
+            <h1 class="hero-title">notforu <span>(Pr0fiTX)</span></h1>
+            <p class="hero-subtitle">
+                Infosec student & reverse engineering explorer. Focused on low-level primitives, secure software design, Arch/Linux administration and CTF challenges.
+            </p>
+            <div class="hero-actions">
+                <a href="https://git.nfu.su" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                    <span>Explore Git Repos</span> &rarr;
+                </a>
+                <a href="#radar-section" class="btn">
+                    <span>// CTF Matrix</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- ОСНОВНОЙ BENTO-GRID -->
+        <main class="bento-grid" id="specs">
+
+            <!-- 1. ИНТЕРАКТИВНЫЙ ТЕРМИНАЛ -->
+            <article class="card card-terminal">
+                <div class="term-header">
+                    <div class="term-dots">
+                        <div class="term-dot"></div>
+                        <div class="term-dot"></div>
+                        <div class="term-dot"></div>
+                    </div>
+                    <div class="term-tabs">
+                        <button class="term-tab active" data-tab="tab-whoami">whoami.sh</button>
+                        <button class="term-tab" data-tab="tab-ctf">ctf_tools.log</button>
+                        <button class="term-tab" data-tab="tab-events">ctf_events.log</button>
+                    </div>
+                </div>
+                <div class="term-body">
+                    <!-- ВКЛАДКА 1: whoami.sh -->
+                    <div class="tab-content active" id="tab-whoami">
+                        <div class="term-row"><span class="term-key">USER:</span><span class="term-val">notforu (Pr0fiTX)</span></div>
+                        <div class="term-row"><span class="term-key">FIELD:</span><span class="term-val">InfoSec / Secure Software Development</span></div>
+                        <div class="term-row"><span class="term-key">FOCUS:</span><span class="term-val">Reverse Engineering, Cryptography, Low-level OS</span></div>
+                        <div class="term-row"><span class="term-key">LANGS:</span><span class="term-val">C, C++, ASM (x86_64), Bash, Python, Rust (learning)</span></div>
+                        <div class="term-row"><span class="term-key">UPTIME:</span><span class="term-val" id="uptimeCounter">evaluating...</span></div>
+                    </div>
+
+                    <!-- ВКЛАДКА 2: ctf_tools.log -->
+                    <div class="tab-content" id="tab-ctf">
+                        <div class="term-row"><span class="term-key">DEBUGGERS:</span><span class="term-val">GDB, pwndbg, wine-gdb</span></div>
+                        <div class="term-row"><span class="term-key">DECOMPILER:</span><span class="term-val">Ghidra, Cutter, radare2</span></div>
+                        <div class="term-row"><span class="term-key">EXPLOIT:</span><span class="term-val">pwntools, ROPgadget, checksec</span></div>
+                        <div class="term-row"><span class="term-key">NETWORK:</span><span class="term-val">Wireshark, nmap, Burp Suite</span></div>
+                    </div>
+
+                    <!-- ВКЛАДКА 3: events.log (ЖУРНАЛ CTF ИВЕНТОВ) -->
+                    <div class="tab-content" id="tab-events">
+                        <div class="ctf-events-container">
+
+                            <!-- Ивент 1 -->
+                            <div class="ctf-event-entry">
+                                <div class="ctf-event-top">
+                                    <div class="ctf-event-title-group">
+                                        <span class="ctf-badge-status status-done">[COMPLETED]</span>
+                                        <span class="ctf-event-name">Cup of Federation 2026</span>
+                                    </div>
+                                    <span class="ctf-event-date">19.09.2026</span>
+                                </div>
+                                <div class="ctf-event-info">&gt; Rank: ? • Format: Jeopardy • Focus: Reverse</div>
+                            </div>
+
+                            <!-- Ивент 2 -->
+                            <div class="ctf-event-entry">
+                                <div class="ctf-event-top">
+                                    <div class="ctf-event-title-group">
+                                        <span class="ctf-badge-status status-done">[COMPLETED]</span>
+                                        <span class="ctf-event-name">MIREA Junior CTF</span>
+                                    </div>
+                                    <span class="ctf-event-date">24.09.2026</span>
+                                </div>
+                                <div class="ctf-event-info">&gt; Rank: 13th • Format: Jeopardy • Focus: Reverse</div>
+                            </div>
+
+                            <!-- Ивент 3 -->
+                            <div class="ctf-event-entry">
+                                <div class="ctf-event-top">
+                                    <div class="ctf-event-title-group">
+                                        <span class="ctf-badge-status status-plan">[PLANNED]</span>
+                                        <span class="ctf-event-name">???</span>
+                                    </div>
+                                    <span class="ctf-event-date">Upcoming</span>
+                                </div>
+                                <div class="ctf-event-info">&gt; Rank: ? • Format: ? • Focus: ?</div>
+                            </div>
+
+                            <!-- ==============================================================
+                                 ШАБЛОН ДЛЯ БЫСТРОГО ДОБАВЛЕНИЯ НОВОГО ИВЕНТА:
+                                 Скопируй этот блок и вставь его выше или ниже:
+
+                            <div class="ctf-event-entry">
+                                <div class="ctf-event-top">
+                                    <div class="ctf-event-title-group">
+                                        <span class="ctf-badge-status status-done">[COMPLETED]</span>
+                                        <span class="ctf-event-name">TITLE_CTF</span>
+                                    </div>
+                                    <span class="ctf-event-date">2026</span>
+                                </div>
+                                <div class="ctf-event-info">&gt; Format: Jeopardy • Focus: Rev / Pwn</div>
+                            </div>
+                            ============================================================== -->
+
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 2. СИСТЕМНЫЙ СЕТАП / ENVIRONMENT -->
+            <article class="card card-specs">
+                <div>
+                    <h3 style="font-size: 1.1rem; color: var(--text-bright); margin-bottom: 12px;">// Environment</h3>
+                    <div class="spec-item">
+                        <span class="spec-label">Machine</span>
+                        <span class="spec-value">MateBook D 16 (i7-12700H / 16GB)</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Operating System</span>
+                        <span class="spec-value">Omarchy Linux (Arch-based)</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Compositor / WM</span>
+                        <span class="spec-value">Hyprland (Wayland)</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">Editor / Term</span>
+                        <span class="spec-value">Neovim (Miasma) | Kitty</span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 3. ТЕХНОЛОГИЧЕСКИЙ СТЕК -->
+            <article class="card card-stack">
+                <h3 style="font-size: 1.1rem; color: var(--text-bright);">// Stack & Competencies</h3>
+                <div class="tags-wrapper">
+                    <span class="tag">C / C++</span>
+                    <span class="tag">x86_64 NASM</span>
+                    <span class="tag">Linux Internals</span>
+                    <span class="tag">Reverse Engineering</span>
+                    <span class="tag">Nginx Hardening</span>
+                    <span class="tag">Docker</span>
+                    <span class="tag">Python</span>
+                    <span class="tag">Hyprland</span>
+                    <span class="tag">Neovim</span>
+                    <span class="tag">Rust</span>
+                </div>
+            </article>
+
+            <!-- 4. ПЯТИУГОЛЬНЫЙ CTF РАДАР -->
+            <article class="card card-radar" id="radar-section">
+                <div>
+                    <div class="radar-header">
+                        <h3 style="font-size: 1.05rem; color: var(--text-bright);">// CTF Competency Matrix</h3>
+                        <span class="radar-badge">Tasks: 30+</span>
+                    </div>
+
+                    <div class="radar-svg-container">
+                        <svg class="radar-svg" viewBox="0 0 260 240">
+                            <!-- Сетка: концентрические пятиугольники (25%, 50%, 75%, 100%) -->
+                            <polygon class="radar-grid-line" points="130,106.3 147.8,119.2 141.0,140.2 119.0,140.2 112.2,119.2" />
+                            <polygon class="radar-grid-line" points="130,87.5 165.7,113.4 152.0,155.3 108.0,155.3 94.3,113.4" />
+                            <polygon class="radar-grid-line" points="130,68.8 183.5,107.6 163.1,170.5 96.9,170.5 76.5,107.6" />
+                            <polygon class="radar-grid-line" points="130,50 201.3,101.8 174.1,185.7 85.9,185.7 58.7,101.8" />
+
+                            <!-- Радиальные оси из центра -->
+                            <line class="radar-axis" x1="130" y1="125" x2="130" y2="50" />
+                            <line class="radar-axis" x1="130" y1="125" x2="201.3" y2="101.8" />
+                            <line class="radar-axis" x1="130" y1="125" x2="174.1" y2="185.7" />
+                            <line class="radar-axis" x1="130" y1="125" x2="85.9" y2="185.7" />
+                            <line class="radar-axis" x1="130" y1="125" x2="58.7" y2="101.8" />
+
+                            <!-- Полигон данных: REV(85%), OSINT(60%), CRYPTO(30%), FOR(15%), PWN(45%) -->
+                            <polygon class="radar-polygon" points="130,61.3 172.8,111.1 143.2,143.2 123.4,134.1 97.9,114.6" />
+
+                            <!-- Точки на вершинах данных -->
+                            <circle class="radar-point" cx="130" cy="61.3" r="3.5" />
+                            <circle class="radar-point" cx="172.8" cy="111.1" r="3.5" />
+                            <circle class="radar-point" cx="143.2" cy="143.2" r="3.5" />
+                            <circle class="radar-point" cx="123.4" cy="134.1" r="3.5" />
+                            <circle class="radar-point" cx="97.9" cy="114.6" r="3.5" />
+
+                            <!-- Подписи осей -->
+                            <text class="radar-label" x="130" y="36" text-anchor="middle">REV [85%]</text>
+                            <text class="radar-label" x="208" y="98" text-anchor="start">OSINT [60%]</text>
+                            <text class="radar-label" x="180" y="204" text-anchor="start">CRYPTO [30%]</text>
+                            <text class="radar-label" x="80" y="204" text-anchor="end">FOR [15%]</text>
+                            <text class="radar-label" x="52" y="98" text-anchor="end">PWN [45%]</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="radar-footer">
+                    <span style="color: var(--text-muted);">ROLE:</span>
+                    <span class="radar-footer-role">Binary Rev & Exploit Dev</span>
+                </div>
+            </article>
+
+        </main>
+
+        <!-- 5. КОНТАКТЫ И СОЦСЕТИ -->
+        <section id="links">
+            <div class="section-header">
+                <h2>// External Endpoints</h2>
+                <div class="line"></div>
+            </div>
+            <div class="social-grid">
+                <a href="https://git.nfu.su" target="_blank" rel="noopener noreferrer" class="social-card">
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Self-Hosted</div>
+                        <div style="font-weight: 700;">Git Repos (stagit)</div>
+                    </div>
+                    <span class="arrow">&rarr;</span>
+                </a>
+                <a href="https://github.com/Pr0fiTX" target="_blank" rel="noopener noreferrer" class="social-card">
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Code Mirror</div>
+                        <div style="font-weight: 700;">GitHub</div>
+                    </div>
+                    <span class="arrow">&rarr;</span>
+                </a>
+                <a href="https://t.me/PR0F1TX" target="_blank" rel="noopener noreferrer" class="social-card">
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Direct Chat</div>
+                        <div style="font-weight: 700;">Telegram</div>
+                    </div>
+                    <span class="arrow">&rarr;</span>
+                </a>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- VIM-STYLE СТАТУСЛАЙН В ПОДВАЛЕ -->
+    <footer class="statusline">
+        <div>
+            <span class="statusline-mode">NORMAL</span>
+            <span style="color: var(--text-bright);">index.html</span>
+            <span style="color: var(--text-muted); margin-left: 10px;">[RO] utf-8</span>
+        </div>
+        <div style="color: var(--text-muted);">
+            <span>nfu.su v1.0</span>
+            <span style="margin: 0 8px;">•</span>
+            <span>99.9% GENERATED BY Gemini 3.8 Flash (Extended)</span>
+        </div>
+    </footer>
+
+    <script>
+        // --- 1. ТАБЫ В ТЕРМИНАЛЕ ---
+        const tabs = document.querySelectorAll('.term-tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+
+                tab.classList.add('active');
+                const targetId = tab.getAttribute('data-tab');
+                const targetContent = document.getElementById(targetId);
+                if (targetContent) targetContent.classList.add('active');
+            });
+        });
+
+        // --- 2. СИМУЛЯЦИЯ АПТАЙМА ---
+        const uptimeEl = document.getElementById('uptimeCounter');
+        const startTime = Date.now() - (1000 * 60 * 60 * 142);
+        function updateUptime() {
+            const diff = Date.now() - startTime;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const mins = Math.floor((diff / 1000 / 60) % 60);
+            const secs = Math.floor((diff / 1000) % 60);
+            if (uptimeEl) {
+                uptimeEl.textContent = `${days}d ${hours}h ${mins}m ${secs}s (host: alive)`;
+            }
+        }
+        setInterval(updateUptime, 1000);
+        updateUptime();
+
+        // --- 3. ЧАСТИЦЫ В ФОНЕ (ЭНЕРГОСБЕРЕЖЕНИЕ) ---
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let animationId;
+        let isTabActive = true;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 1.5 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.3;
+                this.speedY = (Math.random() - 0.5) * 0.3;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                    this.reset();
+                }
+            }
+            draw() {
+                ctx.fillStyle = 'rgba(118, 128, 76, 0.45)';
+                ctx.fillRect(this.x, this.y, this.size, this.size);
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const count = Math.min(Math.floor((canvas.width * canvas.height) / 18000), 60);
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function loop() {
+            if (!isTabActive) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+            }
+            animationId = requestAnimationFrame(loop);
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            isTabActive = !document.hidden;
+            if (isTabActive) {
+                loop();
+            } else {
+                cancelAnimationFrame(animationId);
+            }
+        });
+
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                resizeCanvas();
+                initParticles();
+            }, 150);
+        });
+
+        initParticles();
+        loop();
+    </script>
+</body>
+</html>
