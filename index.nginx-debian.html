@@ -68,7 +68,7 @@
             background: var(--accent);
         }
 
-        /* CRT Сканлайн-эффект */
+        /* CRT Сканлайн-эффект (по умолчанию отключен) */
         .scanlines {
             position: fixed;
             top: 0;
@@ -80,6 +80,10 @@
             background: linear-gradient(rgba(18, 18, 18, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
             background-size: 100% 4px;
             opacity: 0.6;
+            display: none;
+        }
+        .scanlines.active {
+            display: block;
         }
 
         #particles {
@@ -164,6 +168,19 @@
             border-radius: 4px;
             font-size: 0.8rem;
             color: var(--text-bright);
+            cursor: pointer;
+            font-family: inherit;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+        .hero-badge:hover {
+            border-color: var(--border-bright);
+            box-shadow: 0 0 10px var(--glow);
+        }
+        .hero-badge.active {
+            background: rgba(118, 128, 76, 0.2);
+            border-color: var(--accent);
+            box-shadow: 0 0 12px var(--glow);
         }
         .hero-title {
             font-size: clamp(2rem, 5vw, 3.6rem);
@@ -671,9 +688,9 @@
 
         <!-- ПЕРВЫЙ ЭКРАН (HERO) -->
         <section class="hero" id="about">
-            <div class="hero-badge">
-                <span>&gt; sys_status: all systems operational</span>
-            </div>
+            <button id="scanlinesToggle" class="hero-badge" type="button" aria-pressed="false">
+                <span>&gt; scanlines: [OFF]</span>
+            </button>
             <h1 class="hero-title">notforu <span>(Pr0fiTX)</span></h1>
             <p class="hero-subtitle">
                 Infosec student & reverse engineering explorer. Focused on low-level primitives, secure software design, Arch/Linux administration and CTF challenges.
@@ -1030,6 +1047,18 @@
 
         initParticles();
         loop();
+
+        // --- 4. ПЕРЕКЛЮЧАТЕЛЬ SCANLINES ---
+        const scanlinesToggle = document.getElementById('scanlinesToggle');
+        const scanlinesOverlay = document.querySelector('.scanlines');
+        if (scanlinesToggle && scanlinesOverlay) {
+            scanlinesToggle.addEventListener('click', () => {
+                const isEnabled = scanlinesOverlay.classList.toggle('active');
+                scanlinesToggle.classList.toggle('active', isEnabled);
+                scanlinesToggle.setAttribute('aria-pressed', isEnabled ? 'true' : 'false');
+                scanlinesToggle.querySelector('span').textContent = isEnabled ? '> scanlines: [ON]' : '> scanlines: [OFF]';
+            });
+        }
     </script>
 </body>
 </html>
